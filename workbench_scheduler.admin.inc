@@ -156,7 +156,7 @@ function workbench_scheduler_admin_edit_schedule($form, &$form_state, $name=FALS
     '#title'        => t('End State'),
     '#description'  => t('Select the state to be set when a node reaches its \'end date\''),
     '#options'      => $states,
-    '#required'     => FALSE,
+    '#required'     => TRUE,
   );
 
   // fetch a list of content types that have moderation enabled.
