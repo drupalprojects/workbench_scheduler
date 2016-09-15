@@ -626,6 +626,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
   }
 
   // Add schedules to JavaScript settings.
+  $form['workbench_scheduler']['#attached']['js'][] = drupal_get_path('module', 'workbench_scheduler') . '/js/workbench_scheduler.js';
   $form['workbench_scheduler']['#attached']['js'][] = array(
     'data' => array('workbench_scheduler' => array('schedules' => $schedule_data)),
     'type' => 'setting',
@@ -645,7 +646,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
         'to_name' => t('Set content state to . . .'),
       ),
       '#attributes' => array(
-        'class' => array('workbench-scheduler-sid'),
+        'class' => array('workbench-schedule-sid'),
       ),
     );
   }
