@@ -850,6 +850,8 @@ function workbench_scheduler_save_node_schedule($nid, $vid, $schedule_data) {
       if ($merge) {
         // Apply update hooks.
         module_invoke_all('workbench_scheduler_post_save_node_schedule', $nid, $vid, $schedule_data);
+        // Clear the cache to ensure the node edit form is accurate.
+        entity_get_controller('node')->resetCache(array($nid));
         return TRUE;
       }
   }
@@ -887,6 +889,8 @@ function workbench_scheduler_delete_node_schedule($nid, $vid = 0, $sid = 0) {
 
   if ($delete) {
     module_invoke_all('workbench_scheduler_post_delete_node_schedule', $nid, $vid, $sid);
+    // Clear the cache to ensure the node edit form is accurate.
+    entity_get_controller('node')->resetCache(array($nid));
     return $delete;
   }
 }
