@@ -24,7 +24,7 @@ function workbench_scheduler_admin_page() {
 
   $rows = array();
   // Retrieve any schedules that exist.
-  if ($schedules = workbench_scheduler_load_schedules()) {
+  if ($schedules = workbench_scheduler_schedules_load()) {
     // Get list of the different moderation states.
     $states = workbench_scheduler_state_labels();
 
@@ -32,7 +32,7 @@ function workbench_scheduler_admin_page() {
     // Get list of the different content types.
     $node_types = node_type_get_types();
     // Loop through the schedules to add them to the table.
-    foreach ($schedules as $name => $schedule) {
+    foreach ($schedules as $sid => $schedule) {
 
       // Load transition info.
       foreach ($transitions as $transition) {
@@ -69,13 +69,13 @@ function workbench_scheduler_admin_page() {
       // Format the row.
       $row = array(
         $schedule->label,
-        $name,
+        $schedule->name,
         $transition->name,
         $types,
         // Link to edit the schedule.
-        l(t('edit'), 'admin/config/workbench/scheduler/schedules/' . $name . '/edit'),
+        l(t('edit'), 'admin/config/workbench/scheduler/schedules/' . $schedule->name . '/edit'),
         // Link to delete the scheduler.
-        l(t('delete'), 'admin/config/workbench/scheduler/schedules/' . $name . '/delete'),
+        l(t('delete'), 'admin/config/workbench/scheduler/schedules/' . $schedule->name . '/delete'),
       );
       // Add to the rows array.
       $rows[] = $row;
@@ -100,10 +100,9 @@ function workbench_scheduler_admin_page() {
  */
 function workbench_scheduler_admin_edit_schedule($form, &$form_state, $name = FALSE) {
   $schedule = FALSE;
-  // Passed a machine name? editing a schedule.
   if ($name) {
     // Attempt to load the schedule.
-    if ($schedule = workbench_scheduler_load_schedules($name)) {
+    if ($schedule = workbench_scheduler_machine_name_schedules_load($name)) {
       // Store in the form.
       $form['#schedule']  = $schedule;
     }
@@ -177,7 +176,7 @@ function workbench_scheduler_admin_edit_schedule($form, &$form_state, $name = FA
   );
 
   // Check to see if there are any schedules using this transition.
-  $schedules = workbench_scheduler_load_schedules();
+  $schedules = workbench_scheduler_schedules_load();
   if (!empty($schedules)) {
     foreach ($schedules as $schedule_obj) {
       if (empty($schedule) || $schedule_obj->sid != $schedule->sid) {
@@ -312,7 +311,7 @@ function workbench_scheduler_admin_edit_schedule_submit($form, &$form_state) {
  */
 function workbench_scheduler_admin_delete_schedule($form, &$form_state, $name) {
   // Attempt to load the schedule.
-  if ($schedule = workbench_scheduler_load_schedules($name)) {
+  if ($schedule = workbench_scheduler_machine_name_schedules_load($name)) {
     // Store to form.
     $form['#schedule'] = $schedule;
     // Build confirmation form.
@@ -383,85 +382,73 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
   
   $user_permission = workbench_scheduler_set_schedules_access_check() || user_access('view any workbench schedule'); 
   
-  $revisions = node_revision_list($node);
+  // Getting language (for date formats).
+  global $language; 
 
+  
+  // Declare schedules form array. 
   $schedules = array(
     'schedule_active' => array(),
     'schedule_inactive' => array(),
   );
+  
+  // Fetch node schedule information for every revision. 
+  $node_schedules = workbench_scheduler_load_node_schedule($node->nid);
+  
+  // Process schedules.
+  _workbench_scheduler_process_node_schedules($node_schedules);
 
-  // Getting language (for date formats).
-  global $language; 
-
-  $node_schedules = array();
-  foreach ($revisions as $vid => $revision) {
-    // Load up all the schedules for all revisions of this node.
-    $node_schedules[$vid] = workbench_scheduler_load_node_schedule($node->nid, $vid);
-  }
-  $node_schedules = array_filter($node_schedules);
-
-  $types_moderated = workbench_moderation_moderate_node_types();
-  $is_moderated = (in_array($node->type, $types_moderated)) ? TRUE : FALSE;
-
-  // If there are schedules applied to this node.
-  if ($node_schedules) {
-
-    foreach ($node_schedules as $vid => $node_schedule) {
-      $items = array();
-      // create list of schedules.
-      foreach ($node_schedule as $schedule) {
-
-        // Date.
-        $date = t('not set');
-        if (isset($schedule->date)) {
-          $date = format_date($schedule->date, 'short', $language->language);
-        }
-
-        // TODO: Need to change the way this looks when rendered.
-        $completed = ($schedule->completed) ? '(' . t('Completed') . ')' : '';
-        $items[] =  $schedule->label . ' on ' . $date . ' ' . $completed;
-      }
-
-      // Schedule list.
-      $schedule_list = array(
-        'items' => $items,
-      );
-
-      // Build each row of the tableselect.
-      $manage_schedules = array(
-        'title' => array('data' => array('#title' => $vid)),
-        'vid' => (array('data' => l($vid, 'node/' . $node->nid . '/revisions/' . $vid . '/view'), 'width' => 75)),
-        'schedules' => theme('item_list', $schedule_list),
-      );
-      
-      if ($user_permission) {
-        $manage_schedules['vid_edit'] = l(t('edit'), 'node/' . $node->nid . '/manage_schedules/' . $vid . '/edit');
-      }
-
-      $active = FALSE;
-
-      if ($is_moderated) {
-        // If running published revisions is enabled.
-        if (variable_get('workbench_scheduler_settings_published_revisions')
-          // If node schedule vid is the same as the published revision.
-          && !empty($node->workbench_moderation['published'])
-          && $node->workbench_moderation['published']->vid == $vid) {
-          $active = TRUE;
-        }
-
-        if ($node->workbench_moderation['current']->vid == $vid && $is_moderated) {
-          $active = TRUE;
-        }
-      }
-
-      // Active schedule?
-      if ($active) {
-        $schedules['schedule_active'][$vid] = $manage_schedules;
+  // Preparing results for render.
+  if (!empty($node_schedules)) {
+    foreach ($node_schedules as $schedule) {
+      if ($schedule->active) {
+        $schedule_data['schedule_active'][$schedule->vid][] = $schedule;
       }
       else {
-        $schedules['schedule_inactive'][$vid] = $manage_schedules;
+        $schedule_data['schedule_inactive'][$schedule->vid][] = $schedule;
       }
     }
+  }
+  
+  if (!empty($schedule_data)) {
+    foreach ($schedule_data as $status => $status_schedules) {
+      foreach ($status_schedules as $vid => $revision_schedules) {
+
+        $items = array(); 
+        foreach ($revision_schedules as $node_schedule) {
+          // Loading full schedule data.
+          $schedule = workbench_scheduler_schedules_load($node_schedule->sid);
+
+          // Date.
+          $date = t('not set');
+          if (isset($node_schedule->date)) {
+            $date = format_date($node_schedule->date, 'short', $language->language);
+          }
+
+          // TODO: Need to change the way this looks when rendered.
+          $completed = ($node_schedule->completed) ? '(' . t('Completed') . ')' : '';
+          $items[] = $schedule->label . ' on ' . $date . ' ' . $completed;
+        }
+        
+        // Schedule list.
+        $schedule_list = array(
+          'items' => $items,
+        );
+
+        // Build each row of the tableselect.
+        $manage_schedules = array(
+          'title' => array('data' => array('#title' => $vid)),
+          'vid' => (array('data' => l($vid, 'node/' . $node->nid . '/revisions/' . $vid . '/view'), 'width' => 75)),
+          'schedules' => theme('item_list', $schedule_list),
+        );
+
+        if ($user_permission) {
+          $manage_schedules['vid_edit'] = l(t('edit'), 'node/' . $node->nid . '/manage_schedules/' . $vid . '/edit');
+        }
+        $schedules[$status][$vid] = $manage_schedules;
+      }
+    }
+  
 
     // Render Schedules.
     foreach ($schedules as $status => $schedule) {
@@ -549,7 +536,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
   $form['nid'] = array('#type' => 'hidden', '#value' => $node->nid);
   $form['vid'] = array('#type' => 'hidden', '#value' => $vid);
 
-  $type_schedules = workbench_scheduler_load_type_schedules($node->type);
+  $type_schedules = workbench_scheduler_type_schedules_load($node->type);
 
   $moderation_states = workbench_scheduler_state_labels();
 

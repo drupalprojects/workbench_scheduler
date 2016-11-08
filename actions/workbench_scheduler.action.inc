@@ -13,7 +13,7 @@ function workbench_scheduler_schedules_action_form($options) {
   $types = node_type_get_types();
 
   // Get all schedules from all content types.
-  $cts_schedules = workbench_scheduler_load_type_schedules(array_keys($types));
+  $cts_schedules = workbench_scheduler_type_schedules_load(array_keys($types));
   foreach ($cts_schedules as $ct => $schedules) {
     foreach ($schedules  as $sid => $schedule) {
       $type_schedules[$sid] = $schedule;
@@ -156,7 +156,7 @@ function  workbench_scheduler_schedules_action(&$entity, $context = array()) {
   // Only save schedules for content that supports them.
   $types_moderated = workbench_moderation_moderate_node_types();
   $is_moderated = (in_array($entity->type, $types_moderated)) ? TRUE : FALSE;
-  $schedules = workbench_scheduler_load_type_schedules($entity->type);
+  $schedules = workbench_scheduler_type_schedules_load($entity->type);
 
   if ($is_moderated && !empty($schedules)) {
     // Reset the workbench schedule.

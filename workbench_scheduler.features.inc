@@ -55,7 +55,8 @@ function workbench_scheduler_features_export($data, &$export, $module_name) {
 function workbench_scheduler_features_export_render($module_name, $data) {
   $items = array();
   foreach ($data as $schedule) {
-    $items[$schedule] = workbench_scheduler_load_schedules($schedule);
+    // TODO: refactor this, pass it sid. (but still save machine name in feature).
+    $items[$schedule] = workbench_scheduler_machine_name_schedules_load($schedule);
 
     // Unset SID to prevent overridden state.
     unset($items[$schedule]->sid);
@@ -133,5 +134,5 @@ function workbench_scheduler_features_rebuild($module) {
       workbench_scheduler_save_schedule($schedule['name'], $schedule);
     }
   }
-  drupal_static_reset('workbench_scheduler_load_schedules');
+  drupal_static_reset('workbench_scheduler_schedules_load');
 }

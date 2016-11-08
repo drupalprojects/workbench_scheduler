@@ -79,3 +79,58 @@ function hook_workbench_scheduler_post_process_dates(array $scheduled_nodes) {
   // Set a watchdog log message.
   watchdog('workbench_scheduler', '@count nodes had their schedules run.', array('@count' => count($scheduled_nodes)), WATCHDOG_NOTICE);
 }
+
+/**
+ * Alter the schedules that get filtered before being sent to cron for final processing.
+ *
+ * @param $schedule
+ * This hook is invoked from _workbench_scheduler_process_node_schedules($node_schedules).
+ *
+ * @param array $schedule
+ *   An array of filtered node schedule data, each element in the array is an object
+ *   containing the following properties:
+ *     - nid: The node nid
+ *     - vid: The node revision id
+ *     - sid: The schedule id
+ *     - date: The date of the transition.
+ *     - completed: A flag indicating if schedule has completed or not
+ *     - active: A flag indicating if the schedule is active or not
+ *     - node: The full node object
+ *     - schedule: The full schedule object
+ *
+ * @ingroup workbench_scheduler_hooks
+ * @ingroup hooks
+ */
+function hook_workbench_scheduler_process_node_schedule_alter(&$schedule) {
+  $schedule->active = FALSE;
+}
+
+/**
+ * Provide your own logic to control when schedule transition is triggered. 
+ * 
+ * @param $schedule
+ * This hook is invoked from workbench_scheduler_process_dates() after
+ * starting schedules for nodes.
+ *
+ * @param object $schedule
+ *   An array of node schedule data, each element in the array is an object
+ *   containing the following properties:
+ *     - nid: The node nid
+ *     - vid: The node revision id
+ *     - sid: The schedule id
+ *     - date: The date of the transition.
+ *     - completed: A flag indicating if schedule has completed or not
+ *     - active: A flag indicating if the schedule is active or not
+ *     - node: The full node object
+ *     - schedule: The full schedule object
+ *
+ * @ingroup workbench_scheduler_hooks
+ * @ingroup hooks
+ * @return boolean
+ */
+function hook_workbench_scheduler_cron_transition($schedule) {
+  if ($schedule->active) {
+    return TRUE;
+  }
+}
+
