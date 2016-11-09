@@ -46,7 +46,6 @@ function workbench_scheduler_features_export($data, &$export, $module_name) {
   return array();
 }
 
-
 /**
  * Implements COMPONENT_features_export_render().
  *
@@ -62,7 +61,7 @@ function workbench_scheduler_features_export_render($module_name, $data) {
     unset($items[$schedule]->sid);
   }
 
-  // Get transition info. 
+  // Get transition info.
   // Include workbench moderation.
   module_load_include('module', 'workbench_moderation');
   $transitions = workbench_moderation_transitions();
@@ -78,9 +77,8 @@ function workbench_scheduler_features_export_render($module_name, $data) {
         }
       }
     }
-  } 
-  
-  
+  }
+
   foreach ($items as $key => $schedule) {
     // Unset SID to prevent overridden state.
     unset($items[$key]->sid);
@@ -119,18 +117,18 @@ function workbench_scheduler_features_rebuild($module) {
   if ($defaults = features_get_default('workbench_scheduler', $module)) {
     foreach ($defaults as $schedule) {
 
-      // Find the transition from from_name and to_name. 
+      // Find the transition from from_name and to_name.
       module_load_include('module', 'workbench_moderation');
-      $transitions = workbench_moderation_transitions(); 
+      $transitions = workbench_moderation_transitions();
       foreach($transitions as $transition) {
         if ($transition->from_name == $schedule['from_name'] && $transition->to_name == $schedule['to_name']) {
           unset($schedule['from_name']);
-          unset($schedule['to_name']); 
-          $schedule['transition'] = $transition->id;  
-          break; 
-        } 
+          unset($schedule['to_name']);
+          $schedule['transition'] = $transition->id;
+          break;
+        }
       }
-            
+
       workbench_scheduler_save_schedule($schedule['name'], $schedule);
     }
   }

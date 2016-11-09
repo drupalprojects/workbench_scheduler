@@ -6,15 +6,14 @@
  */
 
 (function ($) {
-
-    // Select all table checkbox. 
+    // Select all table checkbox.
     Drupal.behaviors.workbenchSchedulerSettingsSelectAllToggle = {
        attach: function (context) {
-           // Trigger change event on all checkboxes. 
+           // Trigger change event on all checkboxes.
            $('table.workbench-schedule-sid th.select-all > input.form-checkbox').change(function() {
                $('input.workbench-schedule-sid').change();
            });
-       } 
+       }
     }
     // Vertical tabs.
     Drupal.behaviors.workbenchSchedulerSettingsSummary = {
@@ -45,7 +44,7 @@
                         }
                     }
                 }
-                
+
                 // Remove any schedules that are unchecked.
                 $('.workbench-schedule-sid input[type="checkbox"]:not(:checked)').each(function(){
                     var type_input = $(this);
@@ -68,5 +67,4 @@
             });
         }
     };
-
 })(jQuery);

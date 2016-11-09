@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Tests for workbench_scheduler.module.
@@ -32,9 +31,7 @@ class WorkbenchSchedulerTestCase extends DrupalWebTestCase {
       'administer content types',
       'set any workbench schedule',
     ));
-
   }
-
 }
 
 /**
@@ -56,7 +53,6 @@ class WorkbenchSchedulerScheduleTestCase extends WorkbenchSchedulerTestCase {
   }
 
   function testScheduleCreate() {
-
     // Create schedule.
     $edit = array();
     $edit['label'] = $this->randomName(8);
@@ -79,9 +75,7 @@ class WorkbenchSchedulerScheduleTestCase extends WorkbenchSchedulerTestCase {
     $query->execute();
 
     $this->assertTrue($query, 'Workbench Schedule saved');
-
   }
-
 }
 
 /**
@@ -109,7 +103,6 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
    * @return mixed
    */
   private function createScheduledNode($schedule, $ts = null) {
-
     // Parse arguments.
     if (is_numeric($schedule) && !empty($ts)) {
       $schedule = array($schedule => $ts);
@@ -152,7 +145,6 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
    * Test Node Schedule.
    */
   public function testNodeSchedule() {
-
     // Create two schedules.
     // We do this because each node can schedule multiple schedules.
     $schedule_transitions = array(1,2);
@@ -209,7 +201,6 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
 
     $this->cronRun();
 
-
     // Getting the latest revision.
     $rev_list = node_revision_list($node);
     $latest_vid = max(array_keys($rev_list));
@@ -226,7 +217,6 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
       ->rowCount();
 
     $this->assertTrue($result, "Cron run for {$node->title}: Only schedule for latest revision run.");
-
 
     // Default behavior - 1 revision with multiple schedules.
     // Make timestamp in the past so it will run.
@@ -257,7 +247,6 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
 
     $this->assertEqual($result, 2, "Cron run for {$node->title}: Two schedules were run.");
 
-
     // Secondary behavior - one schedule.
     // Update content type settings.
     // One revision has a schedule, another revision doesn't.
@@ -287,5 +276,4 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
 
     $this->assertFalse($result, "Cron run for {$node->title}: No schedules run.");
   }
-
 }

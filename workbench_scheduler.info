@@ -12,4 +12,3 @@ files[] = includes/workbench_scheduler_handler_filter_name.inc
 files[] = includes/workbench_scheduler_handler_filter_active.inc
 files[] = actions/workbench_scheduler.action.inc
 files[] = tests/workbench_scheduler.test
-

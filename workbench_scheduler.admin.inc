@@ -1,10 +1,8 @@
 <?php
-
 /**
  * @file
  * Provides admin functions for Workbench Scheduler.
  */
-
 
 /**
  * Display a table of workbench schedule for administration.
@@ -92,7 +90,6 @@ function workbench_scheduler_admin_page() {
   }
   // Returned the themed table.
   return theme('table', array('header' => $headers, 'rows' => $rows));
-
 }
 
 /**
@@ -351,7 +348,6 @@ function workbench_scheduler_admin_delete_schedule_submit($form, &$form_state) {
  * Workbench scheduler admin settings page callback.
  */
 function workbench_scheduler_admin_settings_page($form, &$form_state) {
-
   // Cron settings fieldset.
   $form['cron'] = array(
     '#type' => 'fieldset',
@@ -379,22 +375,20 @@ function workbench_scheduler_admin_settings_page($form, &$form_state) {
  * Tableselect form for current schedules applied to a node.
  */
 function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $node) {
-  
-  $user_permission = workbench_scheduler_set_schedules_access_check() || user_access('view any workbench schedule'); 
-  
-  // Getting language (for date formats).
-  global $language; 
+  $user_permission = workbench_scheduler_set_schedules_access_check() || user_access('view any workbench schedule');
 
-  
-  // Declare schedules form array. 
+  // Getting language (for date formats).
+  global $language;
+
+  // Declare schedules form array.
   $schedules = array(
     'schedule_active' => array(),
     'schedule_inactive' => array(),
   );
-  
-  // Fetch node schedule information for every revision. 
+
+  // Fetch node schedule information for every revision.
   $node_schedules = workbench_scheduler_load_node_schedule($node->nid);
-  
+
   // Process schedules.
   _workbench_scheduler_process_node_schedules($node_schedules);
 
@@ -409,12 +403,12 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
       }
     }
   }
-  
+
   if (!empty($schedule_data)) {
     foreach ($schedule_data as $status => $status_schedules) {
       foreach ($status_schedules as $vid => $revision_schedules) {
 
-        $items = array(); 
+        $items = array();
         foreach ($revision_schedules as $node_schedule) {
           // Loading full schedule data.
           $schedule = workbench_scheduler_schedules_load($node_schedule->sid);
@@ -429,7 +423,7 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
           $completed = ($node_schedule->completed) ? '(' . t('Completed') . ')' : '';
           $items[] = $schedule->label . ' on ' . $date . ' ' . $completed;
         }
-        
+
         // Schedule list.
         $schedule_list = array(
           'items' => $items,
@@ -448,7 +442,6 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
         $schedules[$status][$vid] = $manage_schedules;
       }
     }
-  
 
     // Render Schedules.
     foreach ($schedules as $status => $schedule) {
@@ -492,12 +485,12 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
             'schedules' => t('Schedules'),
           ),
         );
-        // Only edit if have permissions. 
+        // Only edit if have permissions.
         if ($user_permission) {
           $form[$status . '_fieldset']['schedules']['#header']['vid_edit'] = array(
-            'data' => t('Operations'), 
+            'data' => t('Operations'),
             'width' => 200,
-          );  
+          );
         }
       }
     }
@@ -543,9 +536,9 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
   $transitions = workbench_moderation_transitions();
 
   // Getting language (for date formats).
-  global $language; 
-  
-  // Build array of data being passed to settings in javascript. 
+  global $language;
+
+  // Build array of data being passed to settings in javascript.
   $schedule_data = array();
 
   // Build an options array for which schedules to choose.
@@ -553,33 +546,32 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
 
   // Load workbench schedule by vid
   $node_schedules = workbench_scheduler_load_node_schedule($node->nid, $vid);
-  
-  // Setting selected schedules. 
+
+  // Setting selected schedules.
   $selected_schedules = array();
   if (!empty($node_schedules)) {
     foreach ($node_schedules as $node_schedule) {
       $selected_schedules[$node_schedule->sid] = TRUE;
     }
   }
-  
+
   // Add each type schedule to the options array.
   if (!empty($type_schedules)) {
     foreach ($type_schedules as $sid => $schedule) {
-      
-      // If no set permissions nor view permissions, skip. 
+
+      // If no set permissions nor view permissions, skip.
       if (!user_access('set any workbench schedule')
         && !user_access('set workbench schedule for ' . $schedule->name)
         && !user_access('view any workbench schedule')) {
         continue;
       }
-      // If view access but no data, skip again. 
+      // If view access but no data, skip again.
       elseif (!user_access('set any workbench schedule')
         && !user_access('set workbench schedule for ' . $schedule->name)
         && user_access('view any workbench schedule')
         && empty($selected_schedules[$sid])){
         continue;
       }
-      
 
       // Get transition states.
       if (!empty($schedule->transition)) {
@@ -590,7 +582,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
         }
       }
 
-      // Final array for rendering schedule fieldsets and their dates. 
+      // Final array for rendering schedule fieldsets and their dates.
       $schedule_data[] = array(
         'sid' => $schedule->sid,
         'label' => $schedule->label,
@@ -600,8 +592,8 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
         'to_name' => (!empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
       );
 
-      // Checking permissions for setting schedules. 
-      // Added to schedules table. 
+      // Checking permissions for setting schedules.
+      // Added to schedules table.
       if (user_access('set any workbench schedule') || user_access('set workbench schedule for ' . $schedule->name)) {
         $schedule_options[$schedule->sid] = array(
           'label' => $schedule->label,
@@ -639,9 +631,9 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
   }
 
   foreach ($schedule_data as $schedule) {
-    
-    $sid = $schedule['sid']; 
-    
+
+    $sid = $schedule['sid'];
+
     // Fieldset for collecting schedule dates.
     $form['workbench_scheduler']['dates'][$sid] = array(
       '#type' => 'fieldset',
@@ -662,10 +654,10 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
       '#title' =>  t('Set content to ') . $schedule['to_name'] . t(' after . . .'),
       '#description' => t('Note: This schedule will not run until content state is ') .'<strong>'. $schedule['from_name'] . '</strong>' ,
     );
-    
-    // if user does not have set access but has view access. 
-    if (user_access('view any workbench schedule') 
-      && !user_access('set any workbench schedule') 
+
+    // if user does not have set access but has view access.
+    if (user_access('view any workbench schedule')
+      && !user_access('set any workbench schedule')
       && !user_access('set workbench schedule for ' . $schedule['name'])) {
       unset($form['workbench_scheduler']['dates'][$sid]['#states']);
       $form['workbench_scheduler']['dates'][$sid]['workbench_scheduler_date'][$sid]['#disabled'] = TRUE;

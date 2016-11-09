@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Filter based on moderation state.

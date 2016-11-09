@@ -1,11 +1,11 @@
 <?php
+
 /**
  * Workbench scheduler actions form.
  * @param $options
  * @return array
  */
 function workbench_scheduler_schedules_action_form($options) {
-
   // Does the user have permission to set schedules?
   $user_permission = workbench_scheduler_set_schedules_access_check();
   // And are there any schedules for this node type?
@@ -148,7 +148,6 @@ function workbench_scheduler_schedules_action_submit($form, &$form_state) {
  * @param array $context
  */
 function  workbench_scheduler_schedules_action(&$entity, $context = array()) {
-
   // Change vid to latest.
   $latest_revision = workbench_moderation_node_current_load($entity);
   $entity->vid = $latest_revision->vid;
@@ -202,4 +201,3 @@ function  workbench_scheduler_schedules_action(&$entity, $context = array()) {
     }
   }
 }
-

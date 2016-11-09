@@ -1,10 +1,8 @@
 <?php
-
 /**
  * @file
  *  Content schedule views integration for Workbench.
  */
-
 
 /**
  * Implements hook_views_data().
@@ -43,7 +41,7 @@ function workbench_scheduler_views_data() {
       'label' => t('Node Revision'),
     ),
   );
-  
+
   $data['workbench_scheduler_nodes']['is_active'] = array(
     'title' => t('Active'),
     'help' => t('Whether or not this schedule is active.'),
@@ -134,4 +132,3 @@ function workbench_scheduler_views_data() {
 
   return $data;
 }
-

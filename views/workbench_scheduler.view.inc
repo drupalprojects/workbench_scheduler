@@ -1,9 +1,8 @@
 <?php
-
 /**
  * @file workbench_scheduler.view.inc
  * Default view. Provides a tab on the Workbench, "Scheduled Content" which lists
- * all scheduled content. 
+ * all scheduled content.
  */
 
 $view = new view();
@@ -236,5 +235,3 @@ $translatables['workbench_scheduler'] = array(
   t('Active'),
   t('Scheduled Content Page'),
 );
-
-

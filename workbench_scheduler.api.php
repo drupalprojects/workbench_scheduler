@@ -106,8 +106,8 @@ function hook_workbench_scheduler_process_node_schedule_alter(&$schedule) {
 }
 
 /**
- * Provide your own logic to control when schedule transition is triggered. 
- * 
+ * Provide your own logic to control when schedule transition is triggered.
+ *
  * @param $schedule
  * This hook is invoked from workbench_scheduler_process_dates() after
  * starting schedules for nodes.
@@ -133,4 +133,3 @@ function hook_workbench_scheduler_cron_transition($schedule) {
     return TRUE;
   }
 }
-
