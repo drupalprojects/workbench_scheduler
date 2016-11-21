@@ -793,7 +793,8 @@ function _workbench_scheduler_process_node_schedules(&$node_schedules) {
       $node_schedule->transition = workbench_moderation_transition_load($node_schedule->schedule->transition);
 
       // Checking to make sure node type supports schedules.
-      $type_supported = !empty(workbench_scheduler_type_schedules_load($node->type));
+      $schedule_check = workbench_scheduler_type_schedules_load($node->type);
+      $type_supported = !empty($schedule_check);
 
       if ($not_completed && $latest_revision && $type_supported) {
         $node_schedule->active = TRUE;
