@@ -201,10 +201,7 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
 
     $this->cronRun();
 
-    // Getting the latest revision.
-    $rev_list = node_revision_list($node);
-    $latest_vid = max(array_keys($rev_list));
-
+    // Run cron again. (This is to make sure no other schedules are run).
     $this->cronRun();
 
     // There should be one completed row.
@@ -212,11 +209,11 @@ class WorkbenchSchedulerNodeScheduleTestCase extends WorkbenchSchedulerTestCase 
       ->fields('wsn')
       ->condition('wsn.nid', $node->nid, '=')
       ->condition('wsn.completed', 1, '=')
-      ->condition('wsn.vid', $latest_vid)
+      ->condition('wsn.vid', $node->vid)
       ->execute()
       ->rowCount();
 
-    $this->assertTrue($result, "Cron run for {$node->title}: Only schedule for latest revision run.");
+    $this->assertEqual($result, 1, "Cron run for {$node->title}: Only schedule for latest revision run.");
 
     // Default behavior - 1 revision with multiple schedules.
     // Make timestamp in the past so it will run.

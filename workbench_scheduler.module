@@ -772,31 +772,26 @@ function _workbench_scheduler_process_node_schedules(&$node_schedules) {
 
       $node_schedule->active = FALSE;
 
-      // Getting the latest revision.
-      $rev_list = node_revision_list($node_schedule);
-      $latest_vid = max(array_keys($rev_list));
+      // Getting the current revision.
+      $node = node_load($node_schedule->nid);
 
-      // If node schedule vid is the same as the latest revision.
-      $latest_revision = $node_schedule->vid == $latest_vid;
+      // If node schedule vid is the same as the current revision.
+      $current_revision = ($node_schedule->vid == $node->workbench_moderation['current']->vid);
 
       // If schedule is not completed.
       $not_completed = $node_schedule->completed == 0;
 
-      // Load node data.
-      $node = node_load($node_schedule->nid, $node_schedule->vid);
+      // Set node property.
       $node_schedule->node = $node;
 
       // Load schedule data for developers.
       $node_schedule->schedule = workbench_scheduler_schedules_load($node_schedule->sid);
 
-      // Load transition data for developers.
-      $node_schedule->transition = workbench_moderation_transition_load($node_schedule->schedule->transition);
-
       // Checking to make sure node type supports schedules.
       $schedule_check = workbench_scheduler_type_schedules_load($node->type);
       $type_supported = !empty($schedule_check);
 
-      if ($not_completed && $latest_revision && $type_supported) {
+      if ($not_completed && $current_revision && $type_supported) {
         $node_schedule->active = TRUE;
       }
 
@@ -1378,8 +1373,8 @@ function workbench_scheduler_process_dates($timestamp) {
 
         $do_process = FALSE;
 
-        // Need to load the node.
-        $node = $node_schedule->node;
+        // Need to load the node revision.
+        $node = node_load($node_schedule->nid, $node_schedule->vid);
 
         if (!empty($node)) {
 
@@ -1401,12 +1396,31 @@ function workbench_scheduler_process_dates($timestamp) {
           if ($do_process) {
             // Only moderate if state is not 'unpublish'.
             // If transition is not published  follow a different workflow.
-            if ($transition->to_name != workbench_moderation_state_published() && $node->status) {
+            if ($transition->to_name != workbench_moderation_state_published() && $node->status == NODE_PUBLISHED) {
               workbench_scheduler_moderate_unpublish($node, $transition->to_name);
             }
+            // Moderate the node using workbench_moderation
             else {
-              // Moderate the node using workbench_moderation.
-              workbench_moderation_moderate($node, $transition->to_name);
+              // Adding support for Workbench Moderation 7.x-3.x.
+              if (function_exists('workbench_moderation_save')) {
+                $node->workbench_moderation_state_new = $transition->to_name;
+                $node->revision = TRUE;
+                $node->is_current = TRUE;
+
+                // Remove any schedules from new revision that are being executed.
+                foreach($node->workbench_schedule as $index =>  $revision_schedule) {
+                  $revisions_match = ($revision_schedule->vid == $node_schedule->vid);
+                  $schedules_match = ($revision_schedule->sid == $node_schedule->sid);
+
+                  if ($revisions_match && $schedules_match) {
+                   unset($node->workbench_schedule[$index]);
+                  }
+                }
+                node_save($node);
+              }
+              else {
+                workbench_moderation_moderate($node, $transition->to_name);
+              }
             }
 
             // Mark schedule as completed.
