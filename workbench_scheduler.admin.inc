@@ -362,6 +362,29 @@ function workbench_scheduler_admin_settings_page($form, &$form_state) {
     '#default_value' => variable_get('workbench_scheduler_settings_published_revisions', FALSE)
   );
 
+  // Date settings fieldset.
+  $form['date'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Date settings'),
+  );
+
+  // Configure date format.
+  // We're only fetching "Short" date formats because those are the only formats
+  // supported by the Date Popup Module.
+  $supported_formats = system_get_date_formats('short');
+  $date_formats = array();
+  foreach ($supported_formats as $format => $data) {
+    $date_formats[$format] = date($format);
+  }
+
+  $form['date']['workbench_scheduler_settings_date_format'] = array(
+    '#type' => 'select',
+    '#title' => t('Date Format'),
+    '#options' => $date_formats,
+    '#description' => t('By default, Workbench Scheduler uses the date format assigned to the system\'s "Short" date type. Choose a different date format here.'),
+    '#default_value' => variable_get('workbench_scheduler_settings_date_format', date_format_type_format('short')),
+  );
+
   $form['actions'] = array('#type' => 'actions');
   $form['actions']['submit'] = array(
     '#type' => 'submit',
@@ -416,7 +439,7 @@ function workbench_scheduler_admin_manage_node_schedules($form, &$form_state, $n
           // Date.
           $date = t('not set');
           if (isset($node_schedule->date)) {
-            $date = format_date($node_schedule->date, 'short', $language->language);
+            $date = format_date($node_schedule->date, 'custom', workbench_scheduler_date_format(), NULL, $language->language);
           }
 
           // TODO: Need to change the way this looks when rendered.
@@ -650,7 +673,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
     // Start date.
     $form['workbench_scheduler']['dates'][$sid]['workbench_scheduler_date'][$sid] = array(
       '#type' => 'date_popup',
-      '#date_format' => date_format_type_format('short', $language->language),
+      '#date_format' => workbench_scheduler_date_format(),
       '#title' =>  t('Set content to ') . $schedule['to_name'] . t(' after . . .'),
       '#description' => t('Note: This schedule will not run until content state is ') .'<strong>'. $schedule['from_name'] . '</strong>' ,
     );
