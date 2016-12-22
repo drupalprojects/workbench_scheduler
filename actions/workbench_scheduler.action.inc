@@ -110,7 +110,7 @@ function workbench_scheduler_schedules_action_form($options) {
         '#type' => 'date_popup',
         '#date_format' => workbench_scheduler_date_format(),
         '#title' =>  t('Set content to ') . $schedule['to_name'] . t(' after . . .'),
-        '#description' => t('Note: This schedule will not run until content state is ') .'<strong>'. $schedule['from_name'] . '</strong>' ,
+        '#description' => t('Note: This schedule will only run when the current moderation state is') .' <strong>'. $schedule['from_name'] . '</strong>.',
       );
     }
 
