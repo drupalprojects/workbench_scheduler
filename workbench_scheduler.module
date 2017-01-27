@@ -1387,16 +1387,15 @@ function workbench_scheduler_process_dates($timestamp) {
 
           // Make sure current transition is the starting transition.
           $transition_valid = $transition->from_name == $node->workbench_moderation['current']->state;
-
           if ($transition_valid) {
             $do_process = TRUE;
-          }
 
-          // Allow modules to override the transition logic.
-          foreach (module_implements('workbench_scheduler_cron_transition') as $module) {
-            $override = module_invoke($module, 'workbench_scheduler_cron_transition', $node_schedule);
-            if (is_bool($override)) {
-              $do_process = $override;
+            // Allow modules to override the transition logic.
+            // Note: modules can only prevent valid transitions from being processed;
+            // they can't force invalid transitions.
+            $override = module_invoke_all('workbench_scheduler_cron_transition', $node_schedule);
+            if (in_array(FALSE, $override, TRUE)) {
+              $do_process = FALSE;
             }
           }
 
