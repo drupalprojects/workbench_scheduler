@@ -1151,7 +1151,7 @@ function workbench_scheduler_schedules_load($sids = FALSE) {
       // Loop through the results.
       foreach ($retrieved_schedules as $schedule) {
         // Already retrieved the schedule?
-        if (isset($schedules[$schedule->sid])) {
+        if (isset($schedules[$schedule->sid]) && !in_array($schedule->type, $schedules[$schedule->sid]->types)) {
           // Yes, then just add this content type to it.
           $schedules[$schedule->sid]->types[] = $schedule->type;
         }
