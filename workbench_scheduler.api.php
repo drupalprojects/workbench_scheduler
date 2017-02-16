@@ -133,3 +133,37 @@ function hook_workbench_scheduler_cron_transition($schedule) {
     return TRUE;
   }
 }
+
+/**
+ * Control access to a node schedule.
+ *
+ * Modules may implement this hook if they want to have a say in whether or not
+ * a given user has access to view or set a schedule on that node.
+ *
+ * @param $node
+ *   The node revision on which to perform the access check.
+ * @param $op
+ *   The operation to be performed. Possible values:
+ *   - "set"
+ *   - "view"
+ * @param $schedule
+ *   An object of schedule data containing the following properties:
+ *     - sid: The schedule id
+ *     - name: The machine name of the schedule
+ *     - label: The label of the schedule.
+ *     - transition: The transition ID from workbench moderation
+ *     - types: An array of supported content types
+ * @param $account
+ *   The user object to perform the access check operation on.
+ *
+ * @ingroup workbench_scheduler_hooks
+ * @ingroup hooks
+ * @return boolean
+ */
+function hook_workbench_scheduler_node_schedule_access($node, $schedule, $op, $account) {
+  if ($op == 'set') {
+    if ($schedule->name == 'archive') {
+      return FALSE;
+    }
+  }
+}
