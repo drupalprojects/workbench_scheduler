@@ -432,6 +432,7 @@ function workbench_scheduler_form_node_form_alter(&$form, &$form_state, $form_id
         }
       }
 
+      unset($transition);
       if (!empty($schedule->transition)) {
         foreach ($transitions as $transition) {
           if ($transition->id == $schedule->transition) {
@@ -445,9 +446,9 @@ function workbench_scheduler_form_node_form_alter(&$form, &$form_state, $form_id
         'sid' => $schedule->sid,
         'label' => $schedule->label,
         'name' => $schedule->name,
-        'transition' => $transition->id,
-        'from_name' => (!empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
-        'to_name' => (!empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
+        'transition' => (!empty($transition)) ? $transition->id : '',
+        'from_name' => (!empty($transition) && !empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
+        'to_name' => (!empty($transition) && !empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
       );
 
       // Checking permissions for setting schedules.
@@ -456,9 +457,9 @@ function workbench_scheduler_form_node_form_alter(&$form, &$form_state, $form_id
         $schedule_options[$schedule->sid] = array(
           'label' => $schedule->label,
           'name' => $schedule->name,
-          'transition' => $transition->id,
-          'from_name' => (!empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
-          'to_name' => (!empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
+          'transition' => (!empty($transition)) ? $transition->id : '',
+          'from_name' => (!empty($transition) && !empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
+          'to_name' => (!empty($transition) && !empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
         );
       }
     }
@@ -1236,8 +1237,10 @@ function workbench_scheduler_schedules_load($sids = FALSE) {
     if ($retrieved_schedules->rowCount()) {
       // Loop through the results.
       foreach ($retrieved_schedules as $schedule) {
+
         // Already retrieved the schedule?
         if (isset($schedules[$schedule->sid]) && !in_array($schedule->type, $schedules[$schedule->sid]->types)) {
+
           // Yes, then just add this content type to it.
           $schedules[$schedule->sid]->types[] = $schedule->type;
         }

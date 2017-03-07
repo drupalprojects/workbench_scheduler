@@ -33,6 +33,7 @@ function workbench_scheduler_admin_page() {
     foreach ($schedules as $sid => $schedule) {
 
       // Load transition info.
+      unset($transition);
       foreach ($transitions as $transition) {
         if ($transition->id == $schedule->transition) {
           break;
@@ -604,6 +605,7 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
       }
 
       // Get transition states.
+      unset($transition);
       if (!empty($schedule->transition)) {
         foreach ($transitions as $transition) {
           if ($transition->id == $schedule->transition) {
@@ -617,9 +619,9 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
         'sid' => $schedule->sid,
         'label' => $schedule->label,
         'name' => $schedule->name,
-        'transition' => $transition->id,
-        'from_name' => (!empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
-        'to_name' => (!empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
+        'transition' => (!empty($transition)) ? $transition->id : '',
+        'from_name' => (!empty($transition) && !empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
+        'to_name' => (!empty($transition) && !empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
       );
 
       // Checking permissions for setting schedules.
@@ -627,8 +629,8 @@ function workbench_scheduler_admin_edit_revision_schedule($form, &$form_state, $
       if (workbench_scheduler_node_schedule_access('set', $revision, $schedule)) {
         $schedule_options[$schedule->sid] = array(
           'label' => $schedule->label,
-          'from_name' => (!empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
-          'to_name' => (!empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
+          'from_name' => (!empty($transition) && !empty($moderation_states[$transition->from_name])) ? $moderation_states[$transition->from_name] : '',
+          'to_name' => (!empty($transition) && !empty($moderation_states[$transition->to_name])) ? $moderation_states[$transition->to_name] : '',
         );
       }
     }
