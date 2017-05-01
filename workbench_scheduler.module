@@ -803,60 +803,6 @@ function workbench_scheduler_schedule_names() {
 }
 
 /**
- * Return an array of counts of schedules for a specific node.
- *
- * @param int $nid
- *   Node id.
- * @param bool|string $status
- *   Which status to return counts.
- *
- * @return int
- *   Return count of schedules.
- */
-function workbench_scheduler_count_node_schedules($nid, $status = FALSE) {
-  $counts = array(
-    'active' => 0,
-    'completed' => 0,
-  );
-
-  // Select from the workbench_scheduler_nodes table.
-  $node_schedules = db_select('workbench_scheduler_nodes', 'wsn')
-  // Retrieve nid.
-    ->fields('wsn', array('nid'));
-  // Retrieve count of completed.
-  $node_schedules->addExpression('SUM(wsn.completed)', 'completed_schedules');
-  // Retrieve count of active (count of completed - sum).
-  $node_schedules->addExpression('(COUNT(wsn.completed) - SUM(wsn.completed))', 'active_schedules');
-  // WHERE node id matches this node id.
-  $node_schedules->condition('wsn.nid', $nid)
-  // Return single row, save comutation time.
-    ->range(0, 1);
-  // Execute.
-  $node_schedules = $node_schedules->execute();
-
-  // Returned results?
-  if ($node_schedules->rowCount()) {
-    // Gather data from first result.
-    $result = $node_schedules->fetchObject();
-
-    $counts['completed'] = $result->completed_schedules;
-    $counts['active'] = $result->active_schedules;
-  }
-
-  // Only want count for a specific status?
-  if ($status) {
-    if (isset($counts[$status])) {
-      return $counts[$status];
-    }
-    else {
-      return 0;
-    }
-  }
-
-  return array_sum($counts);
-}
-
-/**
  * Fetches all active schedules.
  */
 function _workbench_scheduler_process_node_schedules(&$node_schedules) {
