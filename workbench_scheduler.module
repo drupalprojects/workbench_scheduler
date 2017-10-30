@@ -1130,6 +1130,13 @@ function workbench_scheduler_schedules_load($sids = FALSE) {
   // Boolean to check if only retrieving a single schedule.
   $get_single = FALSE;
 
+  // make sure we only use $schedules with an "transition" attribute
+  if ($schedules) {
+    $schedules = array_filter($schedules, function($schedule) {
+      return property_exists($schedule, 'transition');
+    });
+  }
+
   if ($schedules) {
     // Create an array of the schedules names already retrieved.
     $retrieved_sids = array_keys($schedules);
@@ -1407,18 +1414,16 @@ function workbench_scheduler_process_dates($timestamp) {
       if ($node_schedule->active) {
 
         // Getting current transition info.
-        foreach ($transitions as $transition) {
-          if ($transition->id == $node_schedule->schedule->transition) {
-            break;
-          }
-        }
+        $transition = current(array_filter($transitions, function($transition) use (&$node_schedule) {
+          return $transition->id == $node_schedule->schedule->transition;
+        }));
 
         $do_process = FALSE;
 
         // Need to load the node revision.
         $node = node_load($node_schedule->nid, $node_schedule->vid);
 
-        if (!empty($node)) {
+        if (!empty($node) && !empty($transition)) {
 
           // Make sure current transition is the starting transition.
           $transition_valid = $transition->from_name == $node->workbench_moderation['current']->state;
